@@ -1,13 +1,4 @@
-/* fswebcam - FireStorm.cx's webcam generator                 */
-/*============================================================*/
-/* Copyright (C)2005-2014 Philip Heron <phil@sanslogic.co.uk> */
-/*                                                            */
-/* This program is distributed under the terms of the GNU     */
-/* General Public License, version 2. You may use, modify,    */
-/* and redistribute it under the terms of this license. A     */
-/* copy should be included with this source.                  */
-
-#ifdef HAVE_CONFIG_H
+#ifdef V4L2_INTERFACE_H
 #include "config.h"
 #endif
 
@@ -20,10 +11,8 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include "videodev2.h"
-#include "src.h"
-#include "log.h"
-
-#ifdef HAVE_V4L2
+//#include "src.h"
+//#include "log.h"
 
 typedef struct {
 	void *start;
@@ -1001,20 +990,4 @@ static int src_v4l2_grab(src_t *src)
 	return(0);
 }
 
-src_mod_t src_v4l2 = {
-	"v4l2", SRC_TYPE_DEVICE,
-	src_v4l2_open,
-	src_v4l2_close,
-	src_v4l2_grab
-};
-
-#else /* #ifdef HAVE_V4L2 */
-
-src_mod_t src_v4l2 = {
-	"", SRC_TYPE_NONE,
-        NULL,
-        NULL,
-        NULL
-};
-
-#endif /* #ifdef HAVE_V4L2 */
+#endif // V4L2_INTERFACE_H
