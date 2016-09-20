@@ -1,3 +1,5 @@
+// gcc `pkg-config --libs --cflags opencv` -lm cap.c -o cap
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -13,12 +15,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#define V4L2_ERROR(s) \
-   printf("v4l2_error: %s\n", s); \
-   return -1;
-
 #define V4L2_OK 0
 #define V4L2_REQUESTED_BUFFERS 4
+#define V4L2_ERROR(s) printf("v4l2_error: %s\n", s); return -1;
 #define CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 typedef struct {
@@ -30,15 +29,10 @@ static int width = 640;
 static int height = 480;
 static v4l2_buffer_t *buffers = NULL;
 
-int fswc_add_image_yuv420p(uint8_t *in, uint32_t length, uint8_t *out)
+int yuv420p_to_bgr(void *in, int length, unsigned char *out)
 {
-   uint32_t x;
-   uint32_t y;
-   uint32_t p;
-
-   uint8_t *yptr;
-   uint8_t *uptr;
-   uint8_t *vptr;
+   uint8_t *yptr, *uptr, *vptr;
+   uint32_t x, y, p;
    
    if (length < (width * height * 3) / 2)
       return -1;
@@ -52,25 +46,25 @@ int fswc_add_image_yuv420p(uint8_t *in, uint32_t length, uint8_t *out)
       for (x = 0; x < width; x++) {
          int r, g, b;
          int y, u, v;
-         
+
          y = *(yptr++) << 8;
          u = uptr[p] - 128;
          v = vptr[p] - 128;
-         
+
          r = (y + (359 * v)) >> 8;
          g = (y - (88 * u) - (183 * v)) >> 8;
          b = (y + (454 * u)) >> 8;
-         
-         *(out++) += CLIP(r, 0x00, 0xFF);
-         *(out++) += CLIP(g, 0x00, 0xFF);
+
          *(out++) += CLIP(b, 0x00, 0xFF);
+         *(out++) += CLIP(g, 0x00, 0xFF);
+         *(out++) += CLIP(r, 0x00, 0xFF);
          
-         if(x & 1) p++;
+         if (x & 1) p++;
       }
-      
+
       if (!(y & 1)) p -= width / 2;
    }
-   
+
    return 0;
 }
 
@@ -217,7 +211,7 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
 {
    uint32_t i;
    fd_set fds;
-   IplImage *frame;
+   IplImage *frame_ipl;
    struct timeval tv = {0};
    struct v4l2_buffer buf = {0};
    
@@ -239,18 +233,19 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
    }
 
    printf("Length: %d\nAddress: %p\n", buf.length, buffers[buf.index]);
-   printf("Image Length: %d\n", buf.bytesused);   
+   printf("Image Length: %d\n", buf.bytesused);
 
-   // uint8_t * frame_yuv = calloc(width * height * 3, sizeof(uint8_t));
-   // fswc_add_image_yuv420p((unsigned char*) buffers[buf.index].start, buf.length, frame_yuv);
-   // CvMat frame = cvMat(height, width, CV_8UC3, (void *) x);
-   // frame = cvDecodeImage(&frame, 1);
-   // cvSaveImage("frame.jpg", frame, 0);
-   // free(frame_yuv);
+   // FILE * f = fopen("frame.yuv420p", "wb");
+   // if (frame != NULL)  {
+   //    fwrite(buffers[buf.index].start, buf.length, 1, f);
+   //    fclose(f);
+   // }
 
-   //cvShowImage("frame", frame);
-   //cvWaitKey(0);   
-   //cvReleaseImage(&frame);
+   unsigned char *frame_yuv = calloc(width * height * 3, sizeof(unsigned char));
+   yuv420p_to_bgr(buffers[buf.index].start, buf.length, frame_yuv);
+   CvMat frame_bgr = cvMat(height, width, CV_8UC3, (void *) frame_yuv);
+   cvSaveImage("frame.jpg", &frame_bgr, 0);
+   free(frame_yuv);
 
    if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
       V4L2_ERROR("failed to queue buffer.");
@@ -259,10 +254,10 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
    return V4L2_OK;
 }
 
-int v4l2_close_camera(int fd) {
+int v4l2_close_camera(int fd, int buffers_count) {
    int i;
 
-   for(i = 0; i < V4L2_REQUESTED_BUFFERS; i++)
+   for(i = 0; i < buffers_count; i++)
       munmap(buffers[i].start, buffers[i].length);
 
    close(fd);
@@ -297,7 +292,7 @@ int main()
          }
       }
       
-      v4l2_close_camera(fd); 
+      v4l2_close_camera(fd, buffers_count); 
    //}
 
    return V4L2_OK;
