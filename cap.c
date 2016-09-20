@@ -16,7 +16,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #define V4L2_OK 0
-#define V4L2_REQUESTED_BUFFERS 4
 #define V4L2_ERROR(s) printf("v4l2_error: %s\n", s); return -1;
 #define CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
@@ -147,8 +146,8 @@ int v4l2_set_mmap(int fd, int *buffers_count)
    enum v4l2_buf_type type;
    struct v4l2_requestbuffers req = {0};
 
+   req.count = 4;
    req.memory = V4L2_MEMORY_MMAP;
-   req.count = V4L2_REQUESTED_BUFFERS;
    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
    if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
@@ -265,9 +264,8 @@ int v4l2_close_camera(int fd, int buffers_count) {
 
 int main()
 {
-   int i;
-
-   //for (;;) {
+   for (;;) {
+      int i;
       int fd;
       int buffers_count;
       
@@ -293,7 +291,7 @@ int main()
       }
       
       v4l2_close_camera(fd, buffers_count); 
-   //}
+   }
 
    return V4L2_OK;
 }
