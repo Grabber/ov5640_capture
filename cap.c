@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <sys/ioctl.h>
 
 #include <linux/videodev2.h>
@@ -27,6 +28,14 @@ typedef struct {
 static int width = 640;
 static int height = 480;
 static v4l2_buffer_t *buffers = NULL;
+
+double get_wall_time()
+{
+   struct timeval time;
+   if (gettimeofday(&time, NULL))
+      return 0.;
+   return (double) time.tv_sec + (double) time.tv_usec * .000001;
+}
 
 int yuv420p_to_bgr(void *in, int length, unsigned char *out)
 {
@@ -274,6 +283,8 @@ int main()
    for (;;) {
       int i;
       int fd;
+      double after;
+      double before;
       int buffers_count;
       
       fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
@@ -292,12 +303,15 @@ int main()
       //cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
 
       for (i = 0; i < 5; i++) {
+         before = get_wall_time();
          if (v4l2_retrieve_frame(fd, buffers_count) == -1) {
             V4L2_ERROR("failed to retrieve frame.");
          }
+         after = get_wall_time();
+         printf("\nFPS: %f\n", 1./(after - before));
       }
       
-      v4l2_close_camera(fd, buffers_count); 
+      v4l2_close_camera(fd, buffers_count);
    }
 
    return V4L2_OK;
