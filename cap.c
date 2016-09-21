@@ -255,8 +255,15 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
 
 int v4l2_close_camera(int fd, int buffers_count) {
    int i;
+   enum v4l2_buf_type type;
 
-   for(i = 0; i < buffers_count; i++)
+   type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+   if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1) {
+      V4L2_ERROR("failed to stream off.");
+   }  
+
+   for (i = 0; i < buffers_count; i++)
       munmap(buffers[i].start, buffers[i].length);
 
    close(fd);
