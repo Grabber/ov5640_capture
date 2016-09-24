@@ -25,6 +25,7 @@ typedef struct {
    size_t length;
 } v4l2_buffer_t;
 
+static int k;
 static int width;
 static int height;
 static v4l2_buffer_t *buffers = NULL;
@@ -288,9 +289,11 @@ int main(int argc, char *argv[])
       double before;
       int buffers_count;
 
-      if (argc < 3)
-         V4L2_ERROR("./cap <width> <height>");
+      if (argc != 3) {
+         V4L2_ERROR("./cap <frames> <width> <height>");
+      }
       
+      k = (int) atoi(argv[1]);
       width = (int) atoi(argv[1]);
       height = (int) atoi(argv[2]);
 
@@ -309,7 +312,7 @@ int main(int argc, char *argv[])
 
       //cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
 
-      for (i = 0; i < 5; i++) {
+      for (i = 0; i < k; i++) {
          before = get_wall_time();
          if (v4l2_retrieve_frame(fd, buffers_count) == -1) {
             V4L2_ERROR("failed to retrieve frame.");
