@@ -88,7 +88,8 @@ static int xioctl(int fd, int request, void *arg)
    return r;
 }
 
-int v4l2_init_camera(int fd, unsigned int pixel_format)
+int v4l2_init_camera(int fd)
+//int v4l2_init_camera(int fd, unsigned int pixel_format)
 {
    uint32_t i;
    uint32_t index;
