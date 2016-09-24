@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
       double before;
       int buffers_count;
 
-      if (argc != 3) {
+      if (argc != 4) {
          V4L2_ERROR("./cap <frames> <width> <height>");
       }
       
