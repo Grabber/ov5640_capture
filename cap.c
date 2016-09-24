@@ -25,8 +25,8 @@ typedef struct {
    size_t length;
 } v4l2_buffer_t;
 
-static int width;
-static int height;
+static int width = 320;
+static int height = 240;
 static v4l2_buffer_t *buffers = NULL;
 
 double get_wall_time()
@@ -88,7 +88,7 @@ static int xioctl(int fd, int request, void *arg)
    return r;
 }
 
-int v4l2_init_camera(int fd)
+int v4l2_init_camera(int fd, unsigned int pixel_format)
 {
    uint32_t i;
    uint32_t index;
@@ -130,7 +130,7 @@ int v4l2_init_camera(int fd)
    fmt.fmt.pix.height = height;
    fmt.fmt.pix.field = V4L2_FIELD_ANY;
    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+   fmt.fmt.pix.pixelformat = pixel_format;
 
    if (xioctl(fd, VIDIOC_TRY_FMT, &fmt) == -1) {
       V4L2_ERROR("failed trying to set pixel format.");   
@@ -317,12 +317,17 @@ int main(int argc, char *argv[])
       double after;
       double before;
       int buffers_count;
+      unsigned int pixel_format;
 
-      if (argc < 3)
-         V4L2_ERROR("./cap <WIDTH> <HEIGHT> <PIXEL_FORMAT>");
+      // if (argc < 4)
+         // V4L2_ERROR("./cap <WIDTH> <HEIGHT> <PIXEL_FORMAT>");
       
-      width = (int) argv[1];
-      height = (int) argv[2];
+      // width = (int) atoi(argv[1]);
+      // height = (int) atoi(argv[2]);
+      //pixel_format = parse_pixel_format(argv[3]);
+      
+      // printf("%d, %d\n", width, height);
+      // printf("%d, %d, %d\n", width, height, pixel_format);
 
       fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
       if (fd == -1) {
@@ -330,6 +335,7 @@ int main(int argc, char *argv[])
       }
       
       if (v4l2_init_camera(fd) == -1) {
+      // if (v4l2_init_camera(fd, pixel_format) == -1) {
          V4L2_ERROR("failed to init camera.");
       }
 
