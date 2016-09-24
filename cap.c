@@ -18,6 +18,9 @@
 
 #define CAP_OK 0
 #define CAP_ERROR -1
+#define CAP_ERROR_RET(s) \
+	printf("%s\n", s); \
+	return CAP_ERROR;
 #define CAP_CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 typedef struct {
@@ -25,7 +28,6 @@ typedef struct {
 	size_t length;
 } v4l2_buffer_t;
 
-static int k;
 static int width;
 static int height;
 static v4l2_buffer_t *buffers = NULL;
@@ -89,7 +91,7 @@ static int xioctl(int fd, int request, void *arg)
 	return r;
 }
 
-int v4l2_init_camera(int fd, int width, int height)
+int v4l2_init_camera(int fd)
 {
 	uint32_t i;
 	uint32_t index;
@@ -97,39 +99,26 @@ int v4l2_init_camera(int fd, int width, int height)
 	struct v4l2_input input = {0};
 	struct v4l2_capability caps = {0};
 
-	if (xioctl(fd, VIDIOC_QUERYCAP, &caps) == -1) {	
-		printf("v4l2: unable to query capabilities.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_QUERYCAP, &caps) == -1)
+		CAP_ERROR_RET("v4l2: unable to query capabilities.");
 
-	if (!(caps.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-		printf("v4l2: doesn't support video capturing.\n");
-		return CAP_ERROR;
-	}
+	if (!(caps.capabilities & V4L2_CAP_VIDEO_CAPTURE))
+		CAP_ERROR_RET("v4l2: doesn't support video capturing.");
 
-	printf(" Driver Caps:\n"
-		" Driver: \"%s\"\n"
-		" Card: \"%s\"\n"
-		" Bus: \"%s\"\n"
-		" Version: %d.%d\n"
-		" Capabilities: %08x\n",
-		caps.driver,
-		caps.card,
-		caps.bus_info,
-		(caps.version>>16) && 0xff,
-		(caps.version>>24) && 0xff,
-		caps.capabilities);
+	printf("Driver Caps:\n", caps.driver);
+	printf("Driver: \"%s\"\n", caps.card);
+	printf("Card: \"%s\"\n", caps.bus_info);
+	printf("Bus: \"%s\"\n", (caps.version>>16) && 0xff);
+	printf("Version: %d.%d\n", (caps.version>>24) && 0xff);
+	printf("Capabilities: %08x\n", caps.capabilities);
 
 	input.index = 0;
-	if (xioctl(fd, VIDIOC_ENUMINPUT, &input) == -1) {
-		printf("v4l2: unable to enumerate input.\n");
-		return CAP_ERROR;
-	}
 
-	if(xioctl(fd, VIDIOC_S_INPUT, &input.index) == -1) {
-		printf("v4l2: unable to set input.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_ENUMINPUT, &input) == -1)
+		CAP_ERROR_RET("v4l2: unable to enumerate input.");
+
+	if(xioctl(fd, VIDIOC_S_INPUT, &input.index) == -1)
+		CAP_ERROR_RET("v4l2: unable to set input.");
 
 	fmt.fmt.pix.width = width;
 	fmt.fmt.pix.height = height;
@@ -137,20 +126,20 @@ int v4l2_init_camera(int fd, int width, int height)
 	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
 
-	if (xioctl(fd, VIDIOC_TRY_FMT, &fmt) == -1) {
-		printf("v4l2: failed trying to set pixel format.\n");
-		return CAP_ERROR; 
-	}
+	if (xioctl(fd, VIDIOC_TRY_FMT, &fmt) == -1)
+		CAP_ERROR_RET("v4l2: failed trying to set pixel format.");
 
 	if (fmt.fmt.pix.width != width)
 		width = fmt.fmt.pix.width;
 	if (fmt.fmt.pix.height != height)
 		height = fmt.fmt.pix.height;
 
-	if (xioctl(fd, VIDIOC_S_FMT, &fmt) == -1) {
-		printf("v4l2: failed to set pixel format.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_S_FMT, &fmt) == -1)
+		CAP_ERROR_RET("v4l2: failed to set pixel format.");
+
+	printf("Frame Width: %d\n", width)
+	printf("Frame Height: %d\n", height);
+	printf("Pixel Format: V4L2_PIX_FMT_YUV420");
 
 	return CAP_OK;
 }
@@ -166,22 +155,16 @@ int v4l2_set_mmap(int fd, int *buffers_count)
 	req.memory = V4L2_MEMORY_MMAP;
 	req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-	if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-		printf("v4l2: failed requesting buffers");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_REQBUFS, &req) == -1)
+		CAP_ERROR_RET("v4l2: failed requesting buffers.");
 
-	if (req.count < 2) {
-		printf("v4l2: insufficient buffer memory.\n");
-		return CAP_ERROR;
-	}
+	if (req.count < 2)
+		CAP_ERROR_RET("v4l2: insufficient buffer memory.");
 
 	buffers = (v4l2_buffer_t*) calloc(req.count, sizeof(v4l2_buffer_t));
 
-	if (!buffers) {
-		printf("v4l2: failed to allocated buffers memory.\n");
-		return CAP_ERROR;
-	}
+	if (!buffers)
+		CAP_ERROR_RET("v4l2: failed to allocated buffers memory.");
 
 	for (i = 0; i < req.count; i++) {
 		struct v4l2_buffer buf = {0};
@@ -190,18 +173,14 @@ int v4l2_set_mmap(int fd, int *buffers_count)
 		buf.memory = V4L2_MEMORY_MMAP;
 		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-		if (xioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
-			printf("v4l2: failed to query buffer.\n");
-			return CAP_ERROR;
-		}
+		if (xioctl(fd, VIDIOC_QUERYBUF, &buf) == -1)
+			CAP_ERROR_RET("v4l2: failed to query buffer.");
 
 		buffers[i].length = buf.length;
 		buffers[i].start = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
 
-		if (buffers[i].start == MAP_FAILED) {
-			printf("v4l2: failed to mmap buffer.\n");
-			return CAP_ERROR;
-		}
+		if (buffers[i].start == MAP_FAILED)
+			CAP_ERROR_RET("v4l2: failed to mmap buffer.");
 	}
 
 	for (i = 0; i < req.count; i++) {
@@ -211,18 +190,14 @@ int v4l2_set_mmap(int fd, int *buffers_count)
 		buf.memory = V4L2_MEMORY_MMAP;
 		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-		if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-			printf("v4l2: failed to queue buffer.\n");
-			return CAP_ERROR;
-		}
+		if (xioctl(fd, VIDIOC_QBUF, &buf) == -1)
+			CAP_ERROR_RET("v4l2: failed to queue buffer.");
 	}
 
 	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-	if (xioctl(fd, VIDIOC_STREAMON, &type) == -1) {
-		printf("v4l2: failed to stream on.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_STREAMON, &type) == -1)
+		CAP_ERROR_RET("v4l2: failed to stream on.");
 
 	*buffers_count = req.count;
 
@@ -243,20 +218,16 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-	if (select(fd+1, &fds, NULL, NULL, &tv) == -1) {
-		printf("v4l2: failed to select frame.\n");
-		return CAP_ERROR;
-	}
+	if (select(fd+1, &fds, NULL, NULL, &tv) == -1)
+		CAP_ERROR_RET("v4l2: failed to select frame.");
 
 	buf.memory = V4L2_MEMORY_MMAP;
 	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-	if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
-		printf("v4l2: failed to retrieve frame.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1)
+		CAP_ERROR_RET("v4l2: failed to retrieve frame.");
 
-	printf("Length: %d\n", buf.length); 
+	printf("Length: %d\n", buf.length);
 	printf("Bytesused: %d\n", buf.bytesused);
 	printf("Address: %p\n", &buffers[buf.index]);
 
@@ -272,10 +243,8 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
 	cvSaveImage("frame.jpg", &frame_bgr, 0);
 	free(frame_yuv);
 
-	if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-		printf("v4l2: failed to queue buffer.\n");
-		return CAP_ERROR;
-	}
+	if (xioctl(fd, VIDIOC_QBUF, &buf) == -1)
+		CAP_ERROR_RET("v4l2: failed to queue buffer.");
 
 	return CAP_OK;
 }
@@ -286,10 +255,8 @@ int v4l2_close_camera(int fd, int buffers_count) {
 
 	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-	if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1) {
-		printf("v4l2: failed to stream off.\n");
-		return CAP_ERROR;
-	}  
+	if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1)
+		CAP_ERROR_RET("v4l2: failed to stream off.\n");
 
 	for (i = 0; i < buffers_count; i++)
 		munmap(buffers[i].start, buffers[i].length);
@@ -306,39 +273,28 @@ int main(int argc, char *argv[])
 		double before;
 		int buffers_count;
 
-		if (argc != 4) {
-			printf("./cap <frames> <width> <height>\n");
-			return CAP_ERROR;
-		}
+		if (argc != 3)
+			CAP_ERROR_RET("./cap <width> <height>")
 
-		k = (int) atoi(argv[1]);
 		width = (int) atoi(argv[2]);
 		height = (int) atoi(argv[3]);
 
 		fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
-		if (fd == -1) {
-			printf("v4l2: failed to open the camera.\n");
-			return CAP_ERROR;
-		}
+		if (fd == -1)
+			CAP_ERROR_RET("v4l2: failed to open the camera.");
 
-		if (v4l2_init_camera(fd, width, height) == -1) {
-			printf("v4l2: failed to init camera.\n");
-			return CAP_ERROR;
-		}
+		if (v4l2_init_camera(fd) == -1)
+			CAP_ERROR_RET("v4l2: failed to init camera.");
 
-		if (v4l2_set_mmap(fd, &buffers_count) == -1) {
-			printf("v4l2: failed to mmap.\n");
-			return CAP_ERROR;
-		}
+		if (v4l2_set_mmap(fd, &buffers_count) == -1)
+			CAP_ERROR_RET("v4l2: failed to mmap.\n");
 
       //cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
 
 		for (i = 0; i < k; i++) {
 			before = get_wall_time();
-			if (v4l2_retrieve_frame(fd, buffers_count) == -1) {
-				printf("v4l2: failed to retrieve frame.\n");
-				return CAP_ERROR;
-			}
+			if (v4l2_retrieve_frame(fd, buffers_count) == -1)
+				CAP_ERROR_RET("v4l2: failed to retrieve frame.");
 			after = get_wall_time();
 			printf("\nFPS: %f\n", 1./(after - before));
 		}
