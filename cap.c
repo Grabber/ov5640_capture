@@ -105,11 +105,10 @@ int v4l2_init_camera(int fd)
 	if (!(caps.capabilities & V4L2_CAP_VIDEO_CAPTURE))
 		CAP_ERROR_RET("v4l2: doesn't support video capturing.");
 
-	printf("Driver Caps:\n", caps.driver);
-	printf("Driver: \"%s\"\n", caps.card);
-	printf("Card: \"%s\"\n", caps.bus_info);
-	printf("Bus: \"%s\"\n", (caps.version>>16) && 0xff);
-	printf("Version: %d.%d\n", (caps.version>>24) && 0xff);
+	printf("Driver: \"%s\"\n", caps.driver);
+	printf("Card: \"%s\"\n", caps.card);
+	printf("Bus: \"%s\"\n", caps.bus_info);
+	printf("Version: %d.%d\n", (caps.version>>16) && 0xff, (caps.version>>24) && 0xff);
 	printf("Capabilities: %08x\n", caps.capabilities);
 
 	input.index = 0;
