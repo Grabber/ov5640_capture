@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gcc `pkg-config --libs --cflags opencv` -lm cap.c -o cap
+gcc cap.c -o cap $(pkg-config --libs --cflags opencv) -lm
