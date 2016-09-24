@@ -136,7 +136,7 @@ int v4l2_init_camera(int fd)
 	if (xioctl(fd, VIDIOC_S_FMT, &fmt) == -1)
 		CAP_ERROR_RET("v4l2: failed to set pixel format.");
 
-	printf("Frame Width: %d\n", width)
+	printf("Frame Width: %d\n", width);
 	printf("Frame Height: %d\n", height);
 	printf("Pixel Format: V4L2_PIX_FMT_YUV420");
 
