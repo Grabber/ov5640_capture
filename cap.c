@@ -281,7 +281,7 @@ int v4l2_close_camera(int fd, int buffers_count) {
 
 unsigned int parse_pixel_format(char *pixel_format)
 {
-   if (strcmp(pixel_format, "V4L2_PIX_FMT_YUV420") == 0) {
+   if (strcmp(pixel_format, "V4L2_PIX_FMT_YUV420") == 0)
       return V4L2_PIX_FMT_YUV420;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB332") == 0)
       return V4L2_PIX_FMT_RGB332;
