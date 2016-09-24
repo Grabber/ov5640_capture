@@ -290,9 +290,9 @@ int main(int argc, char *argv[])
       double before;
       int buffers_count;
 
-      if (argc != 4) {
-         V4L2_ERROR("./cap <frames> <width> <height>");
-     }
+	if (argc != 4) {
+		V4L2_ERROR("./cap <frames> <width> <height>");
+		}
       
       k = (int) atoi(argv[1]);
       width = (int) atoi(argv[2]);
