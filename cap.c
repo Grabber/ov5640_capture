@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 
       //cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
 
-		for (i = 0; i < k; i++) {
+		for (i = 0; i < 100; i++) {
 			before = get_wall_time();
 			if (v4l2_retrieve_frame(fd, buffers_count) == -1)
 				CAP_ERROR_RET("v4l2: failed to retrieve frame.");
