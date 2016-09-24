@@ -128,7 +128,8 @@ int v4l2_init_camera(int fd, int width, int height)
    fmt.fmt.pix.height = height;
    fmt.fmt.pix.field = V4L2_FIELD_ANY;
    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR24;
+   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
 
    if (xioctl(fd, VIDIOC_TRY_FMT, &fmt) == -1) {
       V4L2_ERROR("failed trying to set pixel format.");   
