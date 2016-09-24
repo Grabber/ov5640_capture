@@ -25,8 +25,8 @@ typedef struct {
    size_t length;
 } v4l2_buffer_t;
 
-static int width = 640;
-static int height = 480;
+static int width;
+static int height;
 static v4l2_buffer_t *buffers = NULL;
 
 double get_wall_time()
@@ -278,7 +278,57 @@ int v4l2_close_camera(int fd, int buffers_count) {
    close(fd);
 }
 
-int main()
+__u32 parse_pixel_format(char *pixel_format)
+{
+   if (strcmp(pixel_format, "V4L2_PIX_FMT_YUV420") == 0) {
+      return V4L2_PIX_FMT_YUV420;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB332") == 0)
+      return V4L2_PIX_FMT_RGB332;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB444") == 0)
+      return V4L2_PIX_FMT_RGB444;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB444") == 0)
+      return V4L2_PIX_FMT_ARGB444;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB444") == 0)
+      return V4L2_PIX_FMT_XRGB444;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB555") == 0)
+      return V4L2_PIX_FMT_RGB555;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB555") == 0)
+      return V4L2_PIX_FMT_ARGB555;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB555") == 0)
+      return V4L2_PIX_FMT_XRGB555;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB565") == 0)
+      return V4L2_PIX_FMT_RGB565;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB555X") == 0)
+      return V4L2_PIX_FMT_RGB555X;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB555X") == 0)
+      return V4L2_PIX_FMT_ARGB555X;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB555X") == 0)
+      return V4L2_PIX_FMT_XRGB555X;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB565X") == 0)
+      return V4L2_PIX_FMT_RGB565X;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_BGR666") == 0)
+      return V4L2_PIX_FMT_BGR666;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_BGR24") == 0)
+      return V4L2_PIX_FMT_BGR24;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB24") == 0)
+      return V4L2_PIX_FMT_RGB24;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_BGR32") == 0)
+      return V4L2_PIX_FMT_BGR32;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ABGR32") == 0)
+      return V4L2_PIX_FMT_ABGR32;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XBGR32") == 0)
+      return V4L2_PIX_FMT_XBGR32;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB32") == 0)
+      return V4L2_PIX_FMT_RGB32;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB32") == 0)
+      return V4L2_PIX_FMT_ARGB32;
+   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB32") == 0)
+      return V4L2_PIX_FMT_XRGB32;
+   else
+      V4L2_ERROR("pixel format is not supported.");
+}
+
+int main(int argc, char *argv[])
 {
    for (;;) {
       int i;
@@ -286,7 +336,13 @@ int main()
       double after;
       double before;
       int buffers_count;
+
+      if (argv < 3)
+         V4L2_ERROR("./cap <WIDTH> <HEIGHT> <PIXEL_FORMAT>");
       
+      width = argv[1];
+      height = argv[2];
+
       fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
       if (fd == -1) {
          V4L2_ERROR("failed to open the camera.");
