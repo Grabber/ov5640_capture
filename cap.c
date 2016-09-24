@@ -18,7 +18,7 @@
 
 #define CAP_OK 0
 #define CAP_ERROR -1
-#define CAP_ERROR_RET(s) { printf("%s\n", s); return CAP_ERROR }
+#define CAP_ERROR_RET(s) { printf("%s\n", s); return CAP_ERROR; }
 #define CAP_CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 typedef struct {
