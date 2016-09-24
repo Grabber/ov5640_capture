@@ -18,9 +18,7 @@
 
 #define CAP_OK 0
 #define CAP_ERROR -1
-#define CAP_ERROR_RET(s) \
-	printf("%s\n", s); \
-	return CAP_ERROR;
+#define CAP_ERROR_RET(s) { printf("%s\n", s); return CAP_ERROR }
 #define CAP_CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 typedef struct {
@@ -255,7 +253,7 @@ int v4l2_close_camera(int fd, int buffers_count) {
 	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
 	if (xioctl(fd, VIDIOC_STREAMOFF, &type) == -1)
-		CAP_ERROR_RET("v4l2: failed to stream off.\n");
+		CAP_ERROR_RET("v4l2: failed to stream off.");
 
 	for (i = 0; i < buffers_count; i++)
 		munmap(buffers[i].start, buffers[i].length);
@@ -275,8 +273,8 @@ int main(int argc, char *argv[])
 		if (argc != 3)
 			CAP_ERROR_RET("./cap <width> <height>")
 
-		width = (int) atoi(argv[2]);
-		height = (int) atoi(argv[3]);
+		width = (int) atoi(argv[1]);
+		height = (int) atoi(argv[2]);
 
 		fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
 		if (fd == -1)
@@ -286,7 +284,7 @@ int main(int argc, char *argv[])
 			CAP_ERROR_RET("v4l2: failed to init camera.");
 
 		if (v4l2_set_mmap(fd, &buffers_count) == -1)
-			CAP_ERROR_RET("v4l2: failed to mmap.\n");
+			CAP_ERROR_RET("v4l2: failed to mmap.");
 
       //cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
 
