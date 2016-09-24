@@ -25,6 +25,8 @@ typedef struct {
    size_t length;
 } v4l2_buffer_t;
 
+static int width;
+static int height;
 static v4l2_buffer_t *buffers = NULL;
 
 double get_wall_time()
