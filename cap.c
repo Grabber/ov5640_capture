@@ -278,11 +278,6 @@ int v4l2_close_camera(int fd, int buffers_count) {
    close(fd);
 }
 
-void handler(int x)
-{
-   printf("handlerX\n");
-}
-
 int main()
 {
    for (;;) {
@@ -291,8 +286,6 @@ int main()
       double after;
       double before;
       int buffers_count;
-
-      signal(SIGINT, handlerX);
       
       fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
       if (fd == -1) {
