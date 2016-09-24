@@ -287,24 +287,12 @@ unsigned int parse_pixel_format(char *pixel_format)
       return V4L2_PIX_FMT_RGB332;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB444") == 0)
       return V4L2_PIX_FMT_RGB444;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB444") == 0)
-      return V4L2_PIX_FMT_ARGB444;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB444") == 0)
-      return V4L2_PIX_FMT_XRGB444;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB555") == 0)
       return V4L2_PIX_FMT_RGB555;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB555") == 0)
-      return V4L2_PIX_FMT_ARGB555;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB555") == 0)
-      return V4L2_PIX_FMT_XRGB555;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB565") == 0)
       return V4L2_PIX_FMT_RGB565;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB555X") == 0)
       return V4L2_PIX_FMT_RGB555X;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB555X") == 0)
-      return V4L2_PIX_FMT_ARGB555X;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB555X") == 0)
-      return V4L2_PIX_FMT_XRGB555X;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB565X") == 0)
       return V4L2_PIX_FMT_RGB565X;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_BGR666") == 0)
@@ -315,16 +303,8 @@ unsigned int parse_pixel_format(char *pixel_format)
       return V4L2_PIX_FMT_RGB24;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_BGR32") == 0)
       return V4L2_PIX_FMT_BGR32;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ABGR32") == 0)
-      return V4L2_PIX_FMT_ABGR32;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XBGR32") == 0)
-      return V4L2_PIX_FMT_XBGR32;
    else if (strcmp(pixel_format, "V4L2_PIX_FMT_RGB32") == 0)
       return V4L2_PIX_FMT_RGB32;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_ARGB32") == 0)
-      return V4L2_PIX_FMT_ARGB32;
-   else if (strcmp(pixel_format, "V4L2_PIX_FMT_XRGB32") == 0)
-      return V4L2_PIX_FMT_XRGB32;
    else
       V4L2_ERROR("pixel format is not supported.");
 }
