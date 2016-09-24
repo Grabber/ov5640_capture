@@ -136,7 +136,7 @@ int v4l2_init_camera(int fd)
 
 	printf("Frame Width: %d\n", width);
 	printf("Frame Height: %d\n", height);
-	printf("Pixel Format: V4L2_PIX_FMT_YUV420");
+	printf("Pixel Format: V4L2_PIX_FMT_YUV420\n");
 
 	return CAP_OK;
 }
