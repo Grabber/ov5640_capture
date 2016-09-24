@@ -1,4 +1,4 @@
-// gcc `pkg-config --libs --cflags opencv` -lm cap.c -o cap
+// gcc `pkg-config --libs --cflags opencv` -lm cap_rgb.c -o cap_rgb
 
 #include <errno.h>
 #include <fcntl.h>
@@ -130,7 +130,28 @@ int v4l2_init_camera(int fd)
    fmt.fmt.pix.height = height;
    fmt.fmt.pix.field = V4L2_FIELD_ANY;
    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+   //fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB332
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB444
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_ARGB444
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_XRGB444
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB555
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_ARGB555
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_XRGB555
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB565
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB555X
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_ARGB555X
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_XRGB555X
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB565X
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR666
+   fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR24
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR32
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_ABGR32
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_XBGR32
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB32
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_ARGB32
+   // fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_XRGB32
 
    if (xioctl(fd, VIDIOC_TRY_FMT, &fmt) == -1) {
       V4L2_ERROR("failed trying to set pixel format.");   
