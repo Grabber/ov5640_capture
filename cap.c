@@ -1,4 +1,4 @@
-// gcc `pkg-config --libs --cflags opencv` -lm cap.c -o cap
+// gcc cap.c -o cap $(pkg-config --libs --cflags opencv) -lm
 
 #include <errno.h>
 #include <fcntl.h>
@@ -167,7 +167,7 @@ int v4l2_set_mmap(int fd, int *buffers_count)
       V4L2_ERROR("insufficient buffer memory.");
    }
 
-   buffers = calloc(req.count, sizeof(v4l2_buffer_t));
+   buffers = (v4l2_buffer_t*) calloc(req.count, sizeof(v4l2_buffer_t));
 
    if (!buffers) {
       V4L2_ERROR("failed to allocated buffers memory.");
@@ -240,8 +240,9 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
       V4L2_ERROR("failed to retrieve frame.");
    }
 
-   printf("Length: %d\nAddress: %p\n", buf.length, buffers[buf.index]);
-   printf("Image Length: %d\n", buf.bytesused);
+   printf("Length: %d\n", buf.length); 
+   printf("Bytesused: %d\n", buf.bytesused);
+   printf("Address: %p\n", &buffers[buf.index]);
 
    // FILE * f = fopen("frame.yuv420p", "wb");
    // if (frame != NULL)  {
@@ -278,7 +279,7 @@ int v4l2_close_camera(int fd, int buffers_count) {
    close(fd);
 }
 
-__u32 parse_pixel_format(char *pixel_format)
+unsigned int parse_pixel_format(char *pixel_format)
 {
    if (strcmp(pixel_format, "V4L2_PIX_FMT_YUV420") == 0) {
       return V4L2_PIX_FMT_YUV420;
@@ -337,11 +338,11 @@ int main(int argc, char *argv[])
       double before;
       int buffers_count;
 
-      if (argv < 3)
+      if (argc < 3)
          V4L2_ERROR("./cap <WIDTH> <HEIGHT> <PIXEL_FORMAT>");
       
-      width = argv[1];
-      height = argv[2];
+      width = (int) argv[1];
+      height = (int) argv[2];
 
       fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
       if (fd == -1) {
