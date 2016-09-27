@@ -12,12 +12,12 @@ function reload() {
 
 function load() {
 	modprobe vfe_v4l2
-	insmod ov5640_build/ov5640.ko
+	modprobe ov5640 frame_rate
 }
 
 function unload() {
-	rmmod vfe_v4l2
-	rmmod ov5640
+	modprobe -r -v vfe_v4l2
+	modprobe -r -v ov5640
 }
 
 for index in ${!widht[*]}
