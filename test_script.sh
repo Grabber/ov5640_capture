@@ -22,7 +22,7 @@ function unload() {
 
 for index in ${!widht[*]}
 do
-	reload_1 "$1"
+	reload "$1"
 	echo "TEST $index"
 	echo "Widht : ${widht[$index]}, Heigth : ${heigth[$index]}"
 	sudo ./cap "${widht[$index]}" "${heigth[$index]}"
