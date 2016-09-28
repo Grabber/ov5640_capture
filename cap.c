@@ -18,24 +18,6 @@
 
 #include "cap.h"
 
-#define CAP_OK 0
-#define CAP_ERROR -1
-#define CAP_DEVICE "/dev/video0"
-#define CAP_ERROR_RET(s) { \
-							printf("v4l2: %s\n", s); \
-							return CAP_ERROR; \
-						 }
-#define CAP_CLIP(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
-
-typedef struct {
-	void * start;
-	size_t length;
-} v4l2_buffer_t;
-
-static int width;
-static int height;
-static v4l2_buffer_t *buffers = NULL;
-
 double get_wall_time()
 {
 	struct timeval time;
