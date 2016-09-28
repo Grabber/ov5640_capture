@@ -18,6 +18,8 @@
 
 #include "cap.h"
 
+#define CAP_DEVICE "/dev/video0"
+
 double get_wall_time()
 {
 	struct timeval time;
