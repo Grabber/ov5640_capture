@@ -16,7 +16,7 @@ typedef struct {
 
 static int width;
 static int height;
-static v4l2_buffer_t *buffers = NULL;
+static v4l2_buffer_t *buffers;
 
 inline int yuv420p_to_bgr(void *in, int length, unsigned char *out)
 {
