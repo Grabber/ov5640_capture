@@ -13,8 +13,10 @@
 
 #include <linux/videodev2.h>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
+
+#include "cap.h"
 
 #define CAP_OK 0
 #define CAP_ERROR -1
@@ -40,45 +42,6 @@ double get_wall_time()
 	if (gettimeofday(&time, NULL))
 		return 0.;
 	return (double) time.tv_sec + (double) time.tv_usec * .000001;
-}
-
-int yuv420p_to_bgr(void *in, int length, unsigned char *out)
-{
-	uint8_t *yptr, *uptr, *vptr;
-	uint32_t x, y, p;
-
-	if (length < (width * height * 3) / 2)
-		return CAP_ERROR;
-
-	yptr = (uint8_t *) in;
-	uptr = yptr + (width * height);
-	vptr = uptr + (width * height / 4);
-	p = 0;
-
-	for (y = 0; y < height; y++) {
-		for (x = 0; x < width; x++) {
-			int r, g, b;
-			int y, u, v;
-
-			y = *(yptr++) << 8;
-			u = uptr[p] - 128;
-			v = vptr[p] - 128;
-
-			r = (y + (359 * v)) >> 8;
-			g = (y - (88 * u) - (183 * v)) >> 8;
-			b = (y + (454 * u)) >> 8;
-
-			*(out++) += CAP_CLIP(b, 0x00, 0xFF);
-			*(out++) += CAP_CLIP(g, 0x00, 0xFF);
-			*(out++) += CAP_CLIP(r, 0x00, 0xFF);
-
-			if (x & 1) p++;
-		}
-
-		if (!(y & 1)) p -= width / 2;
-	}
-
-	return CAP_ERROR;
 }
 
 static int xioctl(int fd, int request, void *arg)
@@ -136,7 +99,7 @@ int v4l2_init_camera(int fd)
 		CAP_ERROR_RET("failed trying to set pixel format.");
 	}
 
-	if (fmt.fmt.pix.width != width)
+	if (fmt.fmt.pix.width != width) 
 		width = fmt.fmt.pix.width;
 	if (fmt.fmt.pix.height != height)
 		height = fmt.fmt.pix.height;
@@ -182,7 +145,6 @@ int v4l2_set_mmap(int fd, int *buffers_count)
 	}
 
 	buffers = (v4l2_buffer_t*) calloc(req.count, sizeof(v4l2_buffer_t));
-
 	if (!buffers) {
 		CAP_ERROR_RET("failed to allocated buffers memory.");
 	}
@@ -267,7 +229,7 @@ int v4l2_retrieve_frame(int fd, int buffers_count)
 	unsigned char *frame_yuv = calloc(width * height * 3, sizeof(unsigned char));
 	yuv420p_to_bgr(buffers[buf.index].start, buf.length, frame_yuv);
 	CvMat frame_bgr = cvMat(height, width, CV_8UC3, (void *) frame_yuv);
-	cvSaveImage("frame.jpg", &frame_bgr, 0);
+	// cvSaveImage("frame.jpg", &frame_bgr, 0);
 	free(frame_yuv);
 
 	if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
@@ -287,8 +249,9 @@ int v4l2_close_camera(int fd, int buffers_count) {
 		CAP_ERROR_RET("failed to stream off.");
 	}
 
-	for (i = 0; i < buffers_count; i++)
+	for (i = 0; i < buffers_count; i++) {
 		munmap(buffers[i].start, buffers[i].length);
+	}
 
 	close(fd);
 }
