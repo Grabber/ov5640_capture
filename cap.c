@@ -1,4 +1,4 @@
-// gcc cap.c -o cap $(pkg-config --libs --cflags opencv) -lm
+// gcc cap.c -o cap $(pkg-config --libs --cflags opencv) -lm -O3
 
 #include <errno.h>
 #include <fcntl.h>
@@ -18,6 +18,7 @@
 
 #define CAP_OK 0
 #define CAP_ERROR -1
+#define CAP_DEVICE "/dev/video0"
 #define CAP_ERROR_RET(s) { \
 							printf("v4l2: %s\n", s); \
 							return CAP_ERROR; \
@@ -294,46 +295,44 @@ int v4l2_close_camera(int fd, int buffers_count) {
 
 int main(int argc, char *argv[])
 {
-	for (;;) {
-		int i;
-		int fd;
-		double after;
-		double before;
-		int buffers_count;
+	int i;
+	int fd;
+	double after;
+	double before;
+	int buffers_count;
 
-		if (argc != 3) {
-			CAP_ERROR_RET("./cap <width> <height>")
-		}
-
-		width = (int) atoi(argv[1]);
-		height = (int) atoi(argv[2]);
-
-		fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
-		if (fd == -1) {
-			CAP_ERROR_RET("failed to open the camera.");
-		}
-
-		if (v4l2_init_camera(fd) == -1) {
-			CAP_ERROR_RET("failed to init camera.");
-		}
-
-		if (v4l2_set_mmap(fd, &buffers_count) == -1) {
-			CAP_ERROR_RET("failed to mmap.");
-		}
-
-		//cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
-
-		for (i = 0; i < 100; i++) {
-			before = get_wall_time();
-			if (v4l2_retrieve_frame(fd, buffers_count) == -1) {
-				CAP_ERROR_RET("failed to retrieve frame.");
-			}
-			after = get_wall_time();
-			printf("\nFPS: %f\n", 1./(after - before));
-		}
-
-		v4l2_close_camera(fd, buffers_count);
+	if (argc != 3) {
+		CAP_ERROR_RET("./cap <width> <height>")
 	}
+
+	width = (int) atoi(argv[1]);
+	height = (int) atoi(argv[2]);
+
+	fd = open(CAP_DEVICE, O_RDWR | O_NONBLOCK);
+	if (fd == -1) {
+		CAP_ERROR_RET("failed to open the camera.");
+	}
+
+	if (v4l2_init_camera(fd) == -1) {
+		CAP_ERROR_RET("failed to init camera.");
+	}
+
+	if (v4l2_set_mmap(fd, &buffers_count) == -1) {
+		CAP_ERROR_RET("failed to mmap.");
+	}
+
+	// cvNamedWindow("frame", CV_WINDOW_AUTOSIZE);
+
+	for (i = 0; i < 100; i++) {
+		before = get_wall_time();
+		if (v4l2_retrieve_frame(fd, buffers_count) == -1) {
+			CAP_ERROR_RET("failed to retrieve frame.");
+		}
+		after = get_wall_time();
+		printf("\nFPS: %f\n", 1./(after - before));
+	}
+
+	v4l2_close_camera(fd, buffers_count);
 
 	return CAP_OK;
 }
